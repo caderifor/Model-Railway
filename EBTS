@@ -1,8 +1,9 @@
 /*
-ELECTRONIC BLOCK TOKEN SYSTEM  programme EBTS_19April
+ELECTRONIC BLOCK TOKEN SYSTEM  programme EBTS_20April
   by Michael Beer
-  Components work with Arduino code. Signal code works, control switches do not work.
-for the CIR railway - a Welsh narrow gauge railway with two stations (terminus and partway) continuing intO a cassette representing the rest of the line
+   20/04/20  WORKING   :-)
+ 
+for the Cader Ifor Railway - a Welsh narrow gauge railway with two stations (terminus and partway) continuing into a cassette representing the rest of the line
 Two sections requiring three Token INSTRUMENTS A, B and C
 
 A MODEL SYSTEM WHERE ANY TRAIN ENTERING A SINGLE LINE SECTION MUST BE IN POSESSION OF A TOKEN AND ONLY ONE TOKEN CAN BE RELEASED FOR A SECTION
@@ -19,8 +20,7 @@ Panel C - Bethel to the rest of the line - up and down
 This sketch rejigged TO COPE WITH REVISED USE OF TAKE KNOB  and wait for release of knobs 
 PANELS A, B, AND C   NOW INCLUDING WAIT FOR RELEASE   17/04/20 
 
- 19/04/20  signals and IRDs work
-SERVO unlocking moved to PUT routines and locking to follow TAKE
+
            
 */
 #include <VarSpeedServo.h>
@@ -29,13 +29,13 @@ VarSpeedServo myservo2;  // create servo object to control B servo
 VarSpeedServo myservo3;  // create servo object to control C servo
 
 // variables for reading the lever status
-bool Atake = false;         
-bool Btake = false;
-bool Ctake = false;
+bool AtakeLock = false;         
+bool BtakeLock = false;
+bool CtakeLock = false;
 //
-bool Aput = false;
-bool Bput = false;
-bool Cput = false;
+bool AputLock = false;
+bool BputLock = false;
+bool CputLock = false;
 
 bool Asignal = false;   // train has entered section
 bool Bsignal = false;
@@ -85,11 +85,11 @@ void loop() {
 //  code block A1
        Serial.println("A block");
        if (blockedAB == true && bHold == false){     //   only do if b not holding token
-          Aput = digitalRead(8);   
-          if (Aput == false) {
+          AputLock = digitalRead(8);   
+          if (AputLock == false) {
               Serial.println("A put pressed - insert token");
-              while(Aput==false) {  //  wait for lever release
-                Aput = digitalRead(8); 
+              while(AputLock==false) {  //  wait for lever release
+                AputLock = digitalRead(8); 
               } //   end of wait             
                 Serial.println("A token inserted - block free");
                 blockedAB = false; 
@@ -107,15 +107,13 @@ void loop() {
           }  
 //  code block A2       
     if (blockedAB == false) {      //   if AB not blocked  (token available)
-           Atake = digitalRead(5);  
-           if (Atake == false ){ 
+           AtakeLock = digitalRead(5);  
+           if (AtakeLock == false ){ 
                   Serial.println(" A take lever operated");             
-                  while(Atake==false){                                                                
-                       Atake = digitalRead(5); 
+                  while(AtakeLock==false){                                                                
+                       AtakeLock = digitalRead(5); 
                   }     //  end of while  = true
                        Serial.println("A take lever released"); 
-               } 
-    }           
 //  code block A3 
                   blockedAB = true;     //  AB now blocked
                   aHold = true;  
@@ -123,14 +121,15 @@ void loop() {
                        myservo1.write(160, 15,true); 
                        myservo1.detach();
                        Serial.println("A servo locked");
-    //  ??   bHold = true;
                        myservo2.attach(10);
                        myservo2.write(160, 15,true);
                        myservo2.detach();
                        Serial.println("B servo locked"); 
                        digitalWrite(2, HIGH);
                        Asignal = true;       
-                       Serial.println("A signal on"); 
+                       Serial.println("A signal on");
+          } 
+    }           
 //  code block A4
             if(Asignal == true) {    //   on
                 IRDA = analogRead(A0);
@@ -145,11 +144,11 @@ void loop() {
        Serial.println("B Block");
        if (blockedAB ==  true && aHold == false){      //  only if  A hasn't got the token
 
-          Bput = digitalRead(12);    //     Bput button
-         if (Bput == false) { 
+          BputLock = digitalRead(12);    //     Bput button
+         if (BputLock == false) { 
              Serial.println("B put pressed - insert token");          
-             while(Bput==false) {  //  wait for lever release
-                Bput = digitalRead(12);   
+             while(BputLock==false) {  //  wait for lever release
+                BputLock = digitalRead(12);   
              }  //  end of while  = true             
                    Serial.println("B put lever released");
                    blockedAB = false;    //         A & B tokens available 
@@ -168,15 +167,13 @@ void loop() {
   
  //  code block B2       
          if (blockedAB == false){ 
-                Btake = digitalRead(6);       // read Btake button             
-                if (Btake == false){
+                BtakeLock = digitalRead(6);       // read Btake button             
+                if (BtakeLock == false){
                          Serial.println("B take lever operated");
-                   while(Btake == false){
-                      Btake = digitalRead(6);                  
+                   while(BtakeLock == false){
+                      BtakeLock = digitalRead(6);                  
                 }    //    end of while  = true
                    Serial.println("B take lever released");
-            }
-         }
  //  code block B3
                 blockedAB = true;
                 bHold = true;
@@ -191,7 +188,8 @@ void loop() {
                 digitalWrite(3, HIGH);
                 Serial.println("B signal on"); 
                 Bsignal = true;
- //        }      
+              }
+         }
                     
  //  code block B4
      if(Bsignal = true ){
@@ -206,11 +204,11 @@ void loop() {
  //  code block C1      
       Serial.println("C block");
      if (blockedC ==  true) {
-          Cput = digitalRead(13); 
-          if (Cput == false){
+          CputLock = digitalRead(13); 
+          if (CputLock == false){
                Serial.println("C put lever pressed");          
-             while(Cput==false){
-               Cput = digitalRead(13);
+             while(CputLock==false){
+               CputLock = digitalRead(13);
              }  //  end of while  = true
                Serial.println("C put lever released"); 
                blockedC = false;
@@ -223,27 +221,26 @@ void loop() {
  
  //  code block C2
       if (blockedC == false) {          
-             Ctake = digitalRead(7);    
-             if (Ctake == false) { 
+             CtakeLock = digitalRead(7);    
+             if (CtakeLock == false) { 
                  Serial.println("C take lever operated");               
-                 while(Ctake==false){                
-                   Ctake = digitalRead(7);     // read C take button
+                 while(CtakeLock==false){                
+                   CtakeLock = digitalRead(7);     // read C take button
                  }   //  end of while  = true
                   Serial.println("C take lever released");
                  
-                }
-      }
- //  code block C3
+//  code block C3
                    blockedC= true;
                    myservo3.attach(11);
                    myservo3.write(160, 15,true);
                    myservo3.detach(); 
-                   Serial.println("C servo locked");
-                   
-                   digitalWrite(4, HIGH); 
+                   Serial.println("C servo locked"); 
+                   digitalWrite(4, HIGH); //  signal lit
                    Csignal = true;
                    Serial.println("C signal on");                    
-          
+                  }
+      }
+         
  //  code block C4  
                if(Csignal = true) {
                    IRDC = analogRead(A2); 
