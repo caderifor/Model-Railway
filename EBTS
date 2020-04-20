@@ -1,0 +1,259 @@
+/*
+ELECTRONIC BLOCK TOKEN SYSTEM  programme EBTS_19April
+  by Michael Beer
+  Components work with Arduino code. Signal code works, control switches do not work.
+for the CIR railway - a Welsh narrow gauge railway with two stations (terminus and partway) continuing intO a cassette representing the rest of the line
+Two sections requiring three Token INSTRUMENTS A, B and C
+
+A MODEL SYSTEM WHERE ANY TRAIN ENTERING A SINGLE LINE SECTION MUST BE IN POSESSION OF A TOKEN AND ONLY ONE TOKEN CAN BE RELEASED FOR A SECTION
+TAKE levers unlock token take slot (once LEVERS are unlocked by servos)
+    Servos a & B to move to unlock TAKE LEVERS for A & B when the block is free (blockedAB becomes false)    Servos A & B return for blockedC true
+       servos also indicate AVAILABLE in window
+PUT levers unlock slot to allow insertion of token and notify program token has been inserted  
+  Levers monitored in the program by microswitches
+BLOCK ENTRY SIGNALS operated by the programme
+Signals returned to danger by trains passing IR Detectors ( into Analog ports)
+Panel A - Llanfair up trains    Panel B - Bethel down trains   Both control lower block section  -  AB
+Panel C - Bethel to the rest of the line - up and down 
+        
+This sketch rejigged TO COPE WITH REVISED USE OF TAKE KNOB  and wait for release of knobs 
+PANELS A, B, AND C   NOW INCLUDING WAIT FOR RELEASE   17/04/20 
+
+ 19/04/20  signals and IRDs work
+SERVO unlocking moved to PUT routines and locking to follow TAKE
+           
+*/
+#include <VarSpeedServo.h>
+VarSpeedServo myservo1;  // create servo object to control A servo
+VarSpeedServo myservo2;  // create servo object to control B servo
+VarSpeedServo myservo3;  // create servo object to control C servo
+
+// variables for reading the lever status
+bool Atake = false;         
+bool Btake = false;
+bool Ctake = false;
+//
+bool Aput = false;
+bool Bput = false;
+bool Cput = false;
+
+bool Asignal = false;   // train has entered section
+bool Bsignal = false;
+bool Csignal = false;
+
+// blocked variables
+bool blockedAB = false;
+bool blockedC = false;
+
+bool aHold = false;      //   indicates if other end holds a token
+bool bHold = false;
+
+int timewaste = 0;
+// variables to store the values coming from the  IR detectors
+int IRDA = 0;  int IRDB = 0;  int IRDC = 0; 
+//   IRDA on  A0;  IRDB on A1;  IRDC on A2; 
+
+
+
+void setup() {
+
+// declare digital pin LEDs as  outputs for signals.    
+  pinMode(2, OUTPUT);    //  A
+  pinMode(3, OUTPUT);    //  B
+  pinMode(4, OUTPUT);    //  C
+ 
+// declare digitals pin as  input for take buttons.
+   pinMode(5, INPUT);    //  A
+   pinMode(6, INPUT);    //  B
+   pinMode(7, INPUT);    //  C  
+
+// declare digital pins as  input for put buttons.
+   pinMode(8, INPUT);     //  A
+   pinMode(12, INPUT);    //  B
+   pinMode(13, INPUT);    //  C
+   
+// declare analog pins as input for IRDs  
+   pinMode(A0, INPUT);     //  A
+   pinMode(A1, INPUT);     //  B
+   pinMode(A2, INPUT);     //  C
+   
+     Serial.begin(9600);
+}
+
+void loop() {
+
+//  code block A1
+       Serial.println("A block");
+       if (blockedAB == true && bHold == false){     //   only do if b not holding token
+          Aput = digitalRead(8);   
+          if (Aput == false) {
+              Serial.println("A put pressed - insert token");
+              while(Aput==false) {  //  wait for lever release
+                Aput = digitalRead(8); 
+              } //   end of wait             
+                Serial.println("A token inserted - block free");
+                blockedAB = false; 
+                aHold = false;
+  //  Unlock A and B take levers
+               myservo1.attach(9); 
+               myservo1.write(20, 15,true); 
+               myservo1.detach();   
+               Serial.println("A servo unlocked");
+               myservo2.attach(10); 
+               myservo2.write(20, 15, true);
+               myservo2.detach();  
+               Serial.println("B servo unlocked"); 
+             }
+          }  
+//  code block A2       
+    if (blockedAB == false) {      //   if AB not blocked  (token available)
+           Atake = digitalRead(5);  
+           if (Atake == false ){ 
+                  Serial.println(" A take lever operated");             
+                  while(Atake==false){                                                                
+                       Atake = digitalRead(5); 
+                  }     //  end of while  = true
+                       Serial.println("A take lever released"); 
+               } 
+    }           
+//  code block A3 
+                  blockedAB = true;     //  AB now blocked
+                  aHold = true;  
+                       myservo1.attach(9);
+                       myservo1.write(160, 15,true); 
+                       myservo1.detach();
+                       Serial.println("A servo locked");
+    //  ??   bHold = true;
+                       myservo2.attach(10);
+                       myservo2.write(160, 15,true);
+                       myservo2.detach();
+                       Serial.println("B servo locked"); 
+                       digitalWrite(2, HIGH);
+                       Asignal = true;       
+                       Serial.println("A signal on"); 
+//  code block A4
+            if(Asignal == true) {    //   on
+                IRDA = analogRead(A0);
+                if (IRDA < 500 ){     //   train  passing
+                   digitalWrite(2, LOW);
+                   Serial.println("A signal off"); 
+                   Asignal = false; 
+                }
+           }
+                    delay(timewaste);         
+ //  code block B1  
+       Serial.println("B Block");
+       if (blockedAB ==  true && aHold == false){      //  only if  A hasn't got the token
+
+          Bput = digitalRead(12);    //     Bput button
+         if (Bput == false) { 
+             Serial.println("B put pressed - insert token");          
+             while(Bput==false) {  //  wait for lever release
+                Bput = digitalRead(12);   
+             }  //  end of while  = true             
+                   Serial.println("B put lever released");
+                   blockedAB = false;    //         A & B tokens available 
+                   bHold = false;
+    //             A & B Blocks free, unlock
+               myservo1.attach(9); 
+               myservo1.write(20, 15,true); 
+               myservo1.detach();   
+               Serial.println("A servo unlocked");
+               myservo2.attach(10); 
+               myservo2.write(20, 15, true);
+               myservo2.detach();  
+               Serial.println("B servo unlocked"); 
+                }
+           }   
+  
+ //  code block B2       
+         if (blockedAB == false){ 
+                Btake = digitalRead(6);       // read Btake button             
+                if (Btake == false){
+                         Serial.println("B take lever operated");
+                   while(Btake == false){
+                      Btake = digitalRead(6);                  
+                }    //    end of while  = true
+                   Serial.println("B take lever released");
+            }
+         }
+ //  code block B3
+                blockedAB = true;
+                bHold = true;
+                myservo2.attach(10);
+                myservo2.write(160, 15,true);
+                myservo2.detach();
+                Serial.println("B servo locked");
+                myservo1.attach(9);
+                myservo1.write(160, 15,true); 
+                myservo1.detach();
+                Serial.println("A servo locked"); 
+                digitalWrite(3, HIGH);
+                Serial.println("B signal on"); 
+                Bsignal = true;
+ //        }      
+                    
+ //  code block B4
+     if(Bsignal = true ){
+           IRDB = analogRead(A1);
+           if (IRDB < 500) {
+             digitalWrite(3, LOW); 
+             Serial.println("B signal off"); 
+             Bsignal = false;
+         }
+     }
+                       delay(timewaste);
+ //  code block C1      
+      Serial.println("C block");
+     if (blockedC ==  true) {
+          Cput = digitalRead(13); 
+          if (Cput == false){
+               Serial.println("C put lever pressed");          
+             while(Cput==false){
+               Cput = digitalRead(13);
+             }  //  end of while  = true
+               Serial.println("C put lever released"); 
+               blockedC = false;
+               myservo3.attach(11);              //    servo to release position
+               myservo3.write(20, 15,true);
+               myservo3.detach();
+               Serial.println("C servo unlocked"); 
+             }
+          }    
+ 
+ //  code block C2
+      if (blockedC == false) {          
+             Ctake = digitalRead(7);    
+             if (Ctake == false) { 
+                 Serial.println("C take lever operated");               
+                 while(Ctake==false){                
+                   Ctake = digitalRead(7);     // read C take button
+                 }   //  end of while  = true
+                  Serial.println("C take lever released");
+                 
+                }
+      }
+ //  code block C3
+                   blockedC= true;
+                   myservo3.attach(11);
+                   myservo3.write(160, 15,true);
+                   myservo3.detach(); 
+                   Serial.println("C servo locked");
+                   
+                   digitalWrite(4, HIGH); 
+                   Csignal = true;
+                   Serial.println("C signal on");                    
+          
+ //  code block C4  
+               if(Csignal = true) {
+                   IRDC = analogRead(A2); 
+                   if( IRDC < 500 ){
+                   digitalWrite(4, LOW);
+                   Serial.println("C signal off");  
+                   Csignal = false;        
+               }
+          }
+                  delay(timewaste);
+    Serial.println("Loop Back");      
+}
+// LOOP BACK
