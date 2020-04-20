@@ -1,8 +1,10 @@
-//  station crossing servos and stepper doors
-//   incorporating stepper motor CD drive  with initialise
+//  station crossing driven by servos and automatic sliding door by a stepper motor
+//   sliding door stepper motor (laser head drive) from a CD drive  with position initialise
+//   Single track level crossing driven by two servos (one per gate)
 //   working 06/04/20
 //   PIR sensor  pin 2   Limit switch pin A0    Gate change pin 13
 //   gate angle values increase with anticlockwise rotation seen from above
+//   Arduino Uno with LM923 motor shield on 12V DC power  (Jumper removed)
 // 
  #include <VarSpeedServo.h>  
 VarSpeedServo myservo1;  //  pin9
