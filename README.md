@@ -21,6 +21,6 @@ Another project is the  "Unreal Time Clock"  that can be used to run to a timeta
 Having this interface, the clock includes an SD card reader loaded with 30 railway sounds, controlled by the Remote, that can be played out to speakers at either or both stations on the line.
 The original plan was to hack an analogue clock, but they reacted badly to attempts to speed them up.  A switch was made to digital, but TFT screens did not work out.  The project was completed using a second 
 Arduino taking timing pulses from the master and deriving time to be displayed on multiplexed seven segment displays.
-To obtain big enough numerals and a circuit board, a DIY kit digital clock was hacked hacked.
+To obtain big enough numerals and a circuit board, a DIY kit digital clock was hacked.
 
 Since then, another project has been devised to give fun animations in one corner.  When a train passes, several rabbits dissapear down their burrows and a model me standing in front of my caravan waves to the train.
