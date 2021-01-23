@@ -1,12 +1,13 @@
-//  Bridge software stripped to find LED bug
-//  code   MJB  20/01/21
+//  Bridge software SERIAL MONITORING stripped 
+
+//  WORKING   MJB  23/01/21
 
 //  Bridge and gates working correctly
+//  using Arduino with LM293 motor shield driving Nema17 stepper 
+//  9 & 10 for servos,   2 for orange LEDs
+//  DCmotor1 and DCmotor2 used for LEDs
 
-//  DCmotor1 and DCmotor2 used for LEDs  Not Working
-
-//  using Arduino with LM293 motor shield driving Nema17 stepper  and Motor#1 for signal relay
-//  9 & 10 for servos, 13 for speaker,  2 for orange LEDs
+//  tones on pin13  caused trouble - removed.  Use live recording
 
 #include <VarSpeedServo.h>
 VarSpeedServo myservo1;
@@ -16,7 +17,7 @@ VarSpeedServo myservo2;
 AF_Stepper stepmotor(200, 2);
 
 int gatepos = 0;   // 2 for road  -  1  for trains
-int beep = 0;
+int beep = 0;  //  controls flash rate
 int gatebutton = 1;
 int gatecheck = 1;    //   init to road
 
@@ -25,7 +26,6 @@ int switchread = 1023;
 int limitswitch = 1023;
 int bridgebutton = 1023;
 int bridgecheck = 1;  //  do check first run
-int closed = 1;
 
 // LED CODE
    AF_DCMotor DCmotor1(1);    //    set for signal
@@ -33,15 +33,13 @@ int closed = 1;
 
 void setup() {
 
-  pinMode(13, OUTPUT); //    speaker     pin 13 to GND  8ohm speaker
   pinMode(2, OUTPUT);  //    orange LEDs on bridge  
   pinMode(A0, INPUT); //     A0   bridge down button or contact
   pinMode(A2, INPUT); //     bridge button
   pinMode(A4, INPUT); //     gates
-
-// LED CODE      
-     DCmotor1.setSpeed(255);   // max glim
-     DCmotor2.setSpeed(255);   // max glim
+       
+  DCmotor1.setSpeed(255);   // max glim
+  DCmotor2.setSpeed(255);   // max glim
 
   stepmotor.setSpeed(10);
 }
@@ -58,11 +56,11 @@ void loop () {
 
   //   this is the sequence
 
-  if (gatepos == 2) { // RAIL  MOVE to road ? //   only option
+  if (gatepos == 2) { // RAIL - MOVE to road ? -  only option
     gates2rail();
   }
 
-  if( ( gatepos == 1)&&(bridgepos == 0)) { //  TO RAIL  two options
+  if( ( gatepos == 1)&&(bridgepos == 0)) { //  TO RAIL -  two options
     gates2road();
     bridgeup();
   }
@@ -73,23 +71,13 @@ void loop () {
 }  //  loop back
 
 
-void bridgeInit() {  //  Initialise bridge - Down       
+void bridgeInit() {  //   bridge - Down       
       beep = 0;
-      while ( beep < 5) {
-      
-// LED CODE
-      DCmotor2.run(FORWARD);    //  One or other RED on
-      
+      while ( beep < 10) {       //   ten oranges before moving
       digitalWrite(2, HIGH);
-      tone(13, 1100, 300);   //  high beep
-      delay(300);
-      
-// LED CODE
-      DCmotor2.run(BACKWARD);    //   other RED on
-      
-      digitalWrite(2, LOW);      
-      tone(13, 900, 300);    //  low beep
-      delay(300);
+      delay(100);
+      digitalWrite(2, LOW);
+      delay(1000);
       beep = beep + 1;
     }
   switchread = (analogRead(A0));  
@@ -109,21 +97,17 @@ void bridgeInit() {  //  Initialise bridge - Down
       DCmotor2.run(RELEASE); 
 }  //   end bridge init
 
-void gatesInit() {
-  //      initialise gate servos to  ROAD first time around
+void gatesInit() {      //   to  ROAD first time around
   if (gatecheck > 0){
-  myservo1.attach(9);             //  down gate
-  myservo1.write (135, 5, true);  // to across track
-  myservo1.detach();
-  myservo2.attach(10);            //  up gate
-  myservo2.write (45, 5, true);   //   to across track
-  myservo2.detach();
-  gatepos = 2;                    //   gates favour road
-  
-// LED CODE
+    myservo1.attach(9);             //  down gate
+    myservo1.write (135, 5, true);  // to across track
+    myservo1.detach();
+    myservo2.attach(10);            //  up gate
+    myservo2.write (45, 5, true);   //   to across track
+    myservo2.detach();
+    gatepos = 2;                    //   gates favour road
       DCmotor1.setSpeed(255);   // max glim
-      DCmotor1.run(BACKWARD);    //  SIGNAL RED
-       
+      DCmotor1.run(BACKWARD);    //  SIGNAL RED       
       gatecheck = 0;
   }
 }  //   end gates init
@@ -133,48 +117,37 @@ void   gates2rail() {
     if (gatebutton < 500) {         //  for trains   //  road closing  
       beep = 0;
       while ( beep < 20) {
-      
-// LED CODE
       DCmotor2.setSpeed(255);   // max glim
       DCmotor2.run(FORWARD);    //  One or other RED on
-
-      tone(13, 1100, 300);   //  high beep
       delay(300);
-      
-// LED CODE
       DCmotor2.run(BACKWARD);    //   other RED on
-      
-      tone(13, 900, 300);    //  low beep
       delay(300);
       beep = beep + 1;
     }
   //  Move gates
-  myservo1.attach(10);              // first servo on pin 9
-  myservo1.write(129, 20, true);   //  close
-  myservo1.detach();
-  //  second gate
-  myservo2.attach(9);
-  myservo2.write(37, 20, true);  // close 
-  myservo2.detach();
-  gatepos = 1;
-  
-// LED CODE
-      DCmotor2.run(RELEASE); 
+    myservo1.attach(10);              // first servo on pin 9
+    myservo1.write(129, 20, true);   //  close
+    myservo1.detach();
+//  second gate
+    myservo2.attach(9);
+    myservo2.write(37, 20, true);  // close 
+    myservo2.detach();
+    gatepos = 1;
+    DCmotor2.run(RELEASE);    //  nerners off
     DCmotor1.setSpeed(255);   // max glim     
     DCmotor1.run(FORWARD);    //  PLUS polarity to signal GREEN
 }
 }
 
 void  bridgeup() {
-  bridgebutton = analogRead(A2);
-  if (bridgebutton < 500) {      //   bridge button -  lift  bridge
-    beep = 0;
-    while ( beep < 10) {                   //   ten beeps before moving
-      tone(13, 900, 300);
+   bridgebutton = analogRead(A2);
+   if (bridgebutton < 500) {      //   bridge button -  lift  bridge
+      beep = 0;
+      while ( beep < 10) {       //   ten oranges before moving
       digitalWrite(2, HIGH);
       delay(100);
       digitalWrite(2, LOW);
-       delay(1000);
+      delay(1000);
       beep = beep + 1;
     }
     stepmotor.step(500, FORWARD, MICROSTEP);  //  bridge drives up
@@ -187,8 +160,7 @@ void  bridgedown() {
   bridgebutton = analogRead(A2);   //  want to go down?
   if (bridgebutton < 10) {                   //  then   lower bridge
     beep = 0;
-    while ( beep < 10) {                   //   ten beeps before moving
-      tone(13, 900, 300);
+    while ( beep < 10) {         //   ten oranges before moving
       digitalWrite(2, HIGH);
       delay(100);
       digitalWrite(2, LOW);
@@ -202,23 +174,17 @@ void  bridgedown() {
     }
     stepmotor.release();
     bridgepos = 0; 
-    
-// LED CODE  
     DCmotor1.setSpeed(255);   // max glim     
-    DCmotor1.run(FORWARD);    //  PLUS polarity to signal GREEN
+    DCmotor1.run(FORWARD);    //   signal GREEN
   }
 }   //   END OF BRIDGEDOWN
-
-
 
 void gates2road() {
   gatebutton = analogRead(A4);//  IS GATEBUTTON PRESSED FOR ROAD
     if (gatebutton < 500){
     //   start opening gates to road
-    
-// LED CODE
     DCmotor1.setSpeed(255);   
-    DCmotor1.run(BACKWARD);    //  MINUS polarity to signal  RED
+    DCmotor1.run(BACKWARD);    //   signal  RED
 
     //   second gate first
     myservo2.attach(9);             // second servo  pin10
@@ -229,8 +195,6 @@ void gates2road() {
     myservo1.write(47, 20, true);   // close 
     myservo1.detach();
 //  gates moved
-
-// LED CODE
     DCmotor2.run(RELEASE);   //  FLASHING REDS OFF
     gatepos = 2;
   }
