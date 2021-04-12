@@ -15,7 +15,7 @@ These lights are pairs of LEDs wired in opposite polarity, plus a limiting resis
 
 Motor_shield_tester was run up to check the motor shield.  It exercise the outputs and they are monitored on reversed pairs of LEDs on all four motor outs.  It gave a nice insight into what the stepper motor does.
 
-The STATION sketch has two servos to oerate crossing gates and PIR controlling a butchered CD head drive that opens the foyer door of the station as visitors approach.    
+The STATION sketch has two servos to oerate crossing gates and PIR controlling a butchered CD head drive that opens the foyer door of the station as visitors approach.    The latest version has been rewritten in procedures.
 
 Another project is the  "Unreal Time Clock"  that can be used to run to a timetable but fast forward through the times when nothing is happening.   Control uses the same TV remote control system as the train controller.
 Having this interface, the clock includes an SD card reader loaded with 30 railway sounds, controlled by the Remote, that can be played out to speakers at either or both stations on the line.
