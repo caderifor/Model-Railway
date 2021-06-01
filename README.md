@@ -3,7 +3,7 @@ Arduino sketches used for model railway control projects.
 
 Latest project - (PWM****) Train simulator / controller for 12V DC trains (Analogue - not DCC)    PWM drive to locos.  Simulation of driving a steam loco with pots for Regulator, Gear, Brake  (application and release) and train weight - all combined to determine acceleration or deceleration.   Hardware - 1 Arduino Uno and one Hbridge module - hardwired to one direction only to allow voltage and current meters to be included.  DPDT reverse relay following.   Intended to have hardware Emergency Stop button and overcurrent on motor current.
 
-Previous project was devised to give fun animations in one corner.  When a train passes, several rabbits dissapear down their burrows and a model me standing in front of my caravan waves to the train.  Held up by hardware difficulties.
+Previous project was devised to give fun animations in one corner.  When a train passes, several rabbits dissapear down their burrows and a model me standing in front of my caravan waves to the train.  Held up by hardware difficulties.  SNAILCAM version is for new hardware.
 
 Previous  project is the  "Unreal Time Clock"  that can be used to run to a timetable but fast forward through the times when nothing is happening.   Control uses the same TV remote control system as the train controller.
 Having this interface, the clock includes an SD card reader loaded with 30 railway sounds, controlled by the Remote, that can be played out to speakers at either or both stations on the line.
