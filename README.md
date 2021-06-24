@@ -1,7 +1,7 @@
 # Model-Railway
 Arduino sketches used for model railway control projects.
 
-Latest project - (PWM simulation) Train simulator / controller for 12V DC trains (Analogue - not DCC)    PWM drive to locos.  Simulation of driving a steam loco with pots for Regulator, Gear, Brake  (application and release) and train weight - all combined to determine acceleration or deceleration.   Hardware - 1 Arduino Uno and one Hbridge module - hardwired to one direction only to allow voltage and current meters to be included.  DPDT reverse relay following.   With Emergency Stop button and, possibly, overcurrent trip on motor current.
+Latest project - PWM_train_sim_controller.ino   Steam Train simulator / controller for 12V DC trains (Analogue - not DCC)    PWM drive to locos.  Simulation of driving a steam loco with pots for Regulator, Gear, Brake  (application and release) and train weight - all combined to determine acceleration or deceleration.   Hardware - 1 Arduino Uno and one Hbridge module - hardwired to one direction only to allow voltage and current meters to be included.  DPDT reverse relay following.   With Emergency Stop button.
 
 Previous project was devised to give fun animations in one corner.  When a train passes, several rabbits dissapear down their burrows and a model me standing in front of my caravan waves to the train.  Held up by hardware difficulties.  SNAILCAM version is for new hardware.
 
