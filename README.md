@@ -1,7 +1,8 @@
 # Model-Railway
 Arduino sketches used for model railway control projects.
 
-Latest project - PWM_train_sim_final.ino -  Steam Train simulator / controller for 12V DC trains (Analogue - not DCC)    PWM drive to locos.  Simulation of driving a steam loco with pots for Regulator, Gear, Brake  (application and release) and train weight - all combined to determine acceleration or deceleration.   Hardware - 1 Arduino Uno and one Hbridge module - hardwired to one direction only to allow voltage and current meters to be included.  DPDT reverse relay following.   With Emergency Stop button.
+Latest project - PWM_loco_sim_controller.ino -  Steam Train simulator / controller for 12V DC trains (Analogue - not DCC)    PWM drive to locos.  Simulation of driving a steam loco with pots for Regulator, Gear, Brake  (application and release), train weight, and a "knee" value to cut delay time before motor starts turning.  The analogue values are combined to determine acceleration or deceleration.   
+LED indication of  Emergency Stop, mid gear, brake off point, brake (proportional) indicator, Wheel slip warning, Knee (start boost) and SIMPLE mode on back panel.  Hardware - 1 Arduino Uno and one Hbridge module - hardwired to one direction only to allow voltage and current meters to be included.  DPDT reverse relay following.   With Emergency Stop button.
 
 Previous project ( Bunny corner) was devised to give fun animations in one corner of the layout.  When a train enters the area (from either direction), three rabbits dissapear down their burrows (driven by three servos wired in parallel), a model me standing in front of my caravan waves to the train  and just before the rabbits creep out after the train has gone, a red kite circles round a nearby hilltop propelled by a small stepper motor.   (Arduino UNO and motor shield - two LDRs  buried between the rails - one LDR buried in the top of a tree, where the kite perches)
 
