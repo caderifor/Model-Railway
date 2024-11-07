@@ -14,11 +14,11 @@ Arduino taking timing pulses from the master and deriving time to be displayed o
 To obtain big enough numerals and a circuit board, a DIY kit digital clock was hacked.
 
 Previously The BRIDGE project motorized a model Rolling Bascule Bridge  (3D print files on Thingiverse) with a Nema 17 stepper motor lifting the bridge, 2 servo motors driving the adjacent level crossing gate and two DC motor outputs driving a Red/Green rail signal and alternate reds for warnings before gates close.  These are all handled by the Motor Shield ( two LM293 chips)
-These lights are pairs of LEDs wired in opposite polarity, plus a limiting resistor.  Blueish white LEDs on the bridge model Xenon beacons flashed, via a relay on Pin2, before the bridge moves. It was intended to use pin 13 to drive a small speaker with the warning tones, but this disabled the DC motor outputs.
+These lights are pairs of LEDs wired in opposite polarity, plus a limiting resistor.  Blueish white LEDs on the bridge model Xenon beacons flashed, via a Mosfet on Pin2, before the bridge moves. There were no pins free to drive a small speaker with the warning tones, so a Nano was used to drive a speaker with two tones by monitoring the polarity of the flashing lights (Motor) output.  Opto isolators drive one or other Nano pins, depending on polarity, while the lights are flashing.
 
 Before that  -  EBTS - Electronic Block Token System for my 0-16.5 / 7mm scale narrow gauge model railway.   
 The idea is to model a system where a train may not enter a single line section unless the driver is in posession of a token.    Three block instruments are interlocked by an Arduino so that tokens are locked in the machines if the block section is not free.   
-The system is working with the Arduino controlling sections of line with three machines and a virtual machine for the off scene section of railway.
+The system is working with the Arduino controlling sections of line with three machines and two buttons making a virtual machine for the off scene section of railway.
 
 Before that  -  Motor_shield_tester was run up to check the motor shield.  It exercise the outputs and they are monitored on reversed pairs of LEDs on all four motor outs.  It gave a nice insight into what the stepper motor does.
 
