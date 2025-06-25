@@ -1,5 +1,6 @@
 //  Grandads Garden Master
 //  First combined code  not yet tested   23/06/25
+//  COMPILES  25/06/25
 //   via IR Remote     //  Servo stuff from pan n tilt
 //  Based on controller 24 July 2017     working   :-)
 
@@ -20,7 +21,8 @@
 //  pin 9 motor drive analog PWM
 
 //  INPUT
-//  Pin 11  IR  S  // - on IP to Pin GND  // remaining pin on IR to 5v
+//  Pin 11
+//  IR Rcv  [X]  pins l-3 -> code rec , GND, vcc
 
 #include <IRLib.h>
 
@@ -37,9 +39,12 @@ VarSpeedServo myservo2;  //  pin7     Point2
 int motorValue9 = 0;
 int delaytime = 50 ;    //  untidy but is it a problem
 int fwdbkwd9 = 1 ;
+bool CW = LOW;
+bool CCW = HIGH;
 int count = 0;
 int increment = 5;   //   could use to modify Step
 int speedReq = 0;
+int speedNow = 0;
 int Step = 0;
 int Code = 0;
 bool Point1 = HIGH;   //   servos
@@ -63,7 +68,7 @@ void setup() {
   pinMode(8, OUTPUT);   // reverse relay
   pinMode(9, OUTPUT);   // voltage output - analog
   //
-  // set PWM freq for pin 9  
+  // set PWM freq for pin 9
   TCCR1B = TCCR1B & B11111000 | B00000001;    // set timer 1 divisor to     1 for PWM frequency of 31372.55 Hz
 }
 
@@ -130,75 +135,75 @@ void Switch() {   //   Enter correct codes
     //   POINTS
 
     case 000004: //   RED  Point 1 to straight
-  myservo1.attach(6);                //    Point1 servo pin 6
-       //    push rod  =  pull lever   =  105 degrees
-       //    looked at from top of servo
-       //    assuming control rod below pivot
-       
-  myservo1.write(75, servospeed, true);
-  myservo1.detach();
-     Point1 = HIGH;
-     break;
+      myservo1.attach(6);                //    Point1 servo pin 6
+      //    push rod  =  pull lever   =  105 degrees
+      //    looked at from top of servo
+      //    assuming control rod below pivot
+
+      myservo1.write(75, servospeed, true);
+      myservo1.detach();
+      Point1 = HIGH;
+      break;
 
     case 000003: //   GREEN  Point 1 to curved
- myservo1.attach(6);                //    Point1 servo pin 6
-  myservo1.write(105, servospeed, true);
-  myservo1.detach();
+      myservo1.attach(6);                //    Point1 servo pin 6
+      myservo1.write(105, servospeed, true);
+      myservo1.detach();
       Point1 = LOW;
 
       break;
 
     case 000002:       //   YELLOW  Point 2 to straight
- myservo1.attach(7);   //    Point2 servo pin 7
-  myservo1.write(75, servospeed, true);
-  myservo1.detach();
+      myservo2.attach(7);   //    Point2 servo pin 7
+      myservo2.write(75, servospeed, true);
+      myservo2.detach();
       Point2 = HIGH;
       break;
 
     case 000001: //   BLUE  Point 2 to curved
- myservo1.attach(7);                //    Point2 servo pin 7
-  myservo1.write(105, servospeed, true);
-  myservo1.detach();
+      myservo2.attach(7);                //    Point2 servo pin 7
+      myservo2.write(105, servospeed, true);
+      myservo2.detach();
       Point2 = LOW;
       break;
   }    //   end of switch
 }
 
-void Signals(){
+void Signals() {
   //  something like
-  
+
   //  SIGNAL 1
-  if ((Point1 = HIGH) && (CW = HIGH)){
-    digitalWrite(4, HIGH);   //   LED green on
+  if ((Point1 = HIGH) && (CW = HIGH)) {
+    digitalWrite(4, HIGH);  //   LED green on
     digitalWrite(5, LOW);   //   LED red off
   }
 
-   if ((Point1 = HIGH) && (CW = LOW)){
-    digitalWrite(5, HIGH);   //   LED RED on
-        digitalWrite(4, LOW);   //   LED green off
-  } 
+  if ((Point1 = HIGH) && (CW = LOW)) {
+    digitalWrite(5, HIGH);  //   LED RED on
+    digitalWrite(4, LOW);   //   LED green off
+  }
 
   //  SIGNAL 2
-  if ((Point2 = HIGH) && (CCW = HIGH)){
-    digitalWrite(6, HIGH);   //   LED green on
+  if ((Point2 = HIGH) && (CCW = HIGH)) {
+    digitalWrite(6, HIGH);  //   LED green on
     digitalWrite(7, LOW);   //   LED red off
   }
 
-   if ((Point2 = HIGH) && (CCW = LOW)){
-    digitalWrite(6, HIGH);   //   LED RED on
-        digitalWrite(7, LOW);   //   LED green off
+  if ((Point2 = HIGH) && (CCW = LOW)) {
+    digitalWrite(6, HIGH);  //   LED RED on
+    digitalWrite(7, LOW);   //   LED green off
   }
 
 }
 
 void Calc() {
-  //  calculate and drive routine 
-  //  Add set amount + or - to current speed  
+  //  calculate and drive routine
+  //  Add set amount + or - to current speed
   // take in current speed
   speedNow = motorValue9;
   //   update speed this time around
   // Step   from switch ( + or -)
-   speedReq = speedNow + Step;
+  speedReq = speedNow + Step;
   // speedReq must be between 0 and 255
   if (speedReq < 0) {
     speedReq = 0;
@@ -207,13 +212,13 @@ void Calc() {
     speedReq = 255;
   }
   motorValue9 = speedReq;   //    output speed
-      analogWrite(9, motorValue9 );
+  analogWrite(9, motorValue9 );
 }
 
 
 void Deadzone() {
-
   //   Not used ?
+
   if (speedReq < 80) {   //  skip deadzone and stop
     speedReq = 0;
     delaytime = 0;
@@ -235,8 +240,4 @@ void Deadzone() {
       delay(delaytime);
     }
   }
-
-  delay(50);    //  but this slows response to remote - surely
-}        // **********************************************************  LOOP AROUND
-
-//    END
+}
