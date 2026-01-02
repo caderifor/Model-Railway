@@ -1,0 +1,257 @@
+/*  GGR accessories    corrected courtesy ChatGPT
+    EOR code working -Points all working   and programme looping steadily   
+   Random novelty timings - corrections by ChatGPT
+   Working on serial monitor    01/01/26
+   WORKING  after "true" put back in gnomecast
+   
+  pin 7    blink LED  -  half cycle per loop  -  for 'scope
+  pin A1   Point 1 call
+  pin A2   Point 2 call
+  pin A4   point 3 call
+  pin 6   Servo1     rabbit
+  Pin 3   Servo2     gnome
+  pin 9   Servo3     Wind direction
+  pin 5   Servo4     point 3
+  pin 10  servo5     point 1
+  pin 11  servo6     point 2
+  pin A0 open to give noise to seed Random gen
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <VarSpeedServo.h>
+VarSpeedServo myservo1;  //  pin6     Rabbit hole
+VarSpeedServo myservo2;  //  pin3     gnome
+VarSpeedServo myservo3;  //  pin9     Wind
+VarSpeedServo myservo4;  //  pin5     point 3 servo 
+VarSpeedServo myservo5;  //  pin10    point 1 servo
+VarSpeedServo myservo6;  //  pin11    point 2 servo
+bool point1 = LOW;
+int point1call = 0;
+bool point2 = LOW;
+int point2call = 0;
+bool point3 = LOW;
+int point3call = 0;
+bool point3bool=LOW;
+
+int monBlink = LOW;
+
+//  random
+long copyOfRand;
+long randNumber;
+
+//  rabbit
+long Rinner = 0;
+long Router = 0;
+bool upDown = LOW;
+bool runRabbit = LOW;
+long RndRabbit = 20;
+unsigned long nextRabbitTime = 0;
+
+//  gnome
+long Ginner = 0;
+long Gouter = 0;
+bool Gcast = LOW;
+long Gcasttime = 0;
+long RndGnome = 20;
+int  Gcasts = 0;
+unsigned long nextGnomeTime = 0;
+
+//  Wind
+long Winner = 0;
+long Wouter = 0;
+long RndWind = 20;
+long WindVane = 0;
+unsigned long nextWindChange = 0;
+
+void Blink();
+void WindDirection();
+
+void setup() {
+  Serial.begin(9600); 
+  randomSeed(analogRead(0)); 
+  myservo1.attach(6);//    Rabbit servo  
+  myservo2.attach(3);//    gnome servo
+  myservo3.attach(9);//    wind servo 
+  myservo4.attach(5);//    point 3
+  myservo5.attach(10);//   point 1
+  myservo6.attach(11);//   point 2
+  pinMode(7,OUTPUT);  //   BlinkLED  on one, loop off next
+}
+
+void loop() {
+  Blink();
+  outerloopR();
+  outerloopG();
+  outerloopW();
+  Point1();
+  Point2();
+  Point3();
+}   //   end of main loop
+
+void Random() {   //  generate a random number 10 to 9999
+  randNumber = random(10, 9999);
+  copyOfRand = randNumber;
+}   //  end of Random
+
+  //                     Rabbit starts here
+void outerloopR() {
+
+ if (millis() >= nextRabbitTime) {
+    rabbitHole();
+    unsigned long delayTime = random(5000, 600000); // 5 sec to 10 min
+    nextRabbitTime = millis() + delayTime;
+    Serial.print("Next rabbit in ");
+    Serial.print(delayTime / 1000);
+    Serial.println(" seconds");
+  }
+ }
+
+void innerloopR() {         //  Rabbit
+  if (Rinner < RndRabbit) {
+    Rinner = Rinner + 1;
+  }
+  if (Rinner > (RndRabbit - 1)) {
+    Rinner = 0;
+    Router = Router + 1;
+  }
+}
+
+void rabbitHole() {   //  rabbit action
+  if (upDown == HIGH) {  //if UP go down
+    myservo1.write(15, 100, true);
+    upDown = LOW;
+  }
+  else {
+    if (upDown == LOW) {  //if DOWN go UP
+      myservo1.write(150, 10, true);
+      upDown = HIGH;
+    }
+  }    //   ELSE
+}   //   endproc
+
+
+  //                     Gnome starts here
+void outerloopG() {
+if (millis() >= nextGnomeTime) {
+    GnomeCast();
+ unsigned long delayTime = random(5000, 600000); // 5 sec to 10 min
+    nextGnomeTime = millis() + delayTime;
+    Serial.print("Next gnome cast in ");
+    Serial.print(delayTime / 1000);
+    Serial.println(" seconds");
+  }
+ }
+
+void innerloopG() {      //  Gnome
+  if (Ginner < RndGnome) {
+    Ginner = Ginner + 1;
+  }
+  if (Ginner > (RndGnome - 1)) {
+    Ginner = 0;
+    Gouter = Gouter + 1;
+  }
+}
+
+void GnomeCast() {   //  (gnome action)
+for (Gcasts - 0; Gcasts < 3; Gcasts++) {
+    myservo2.write(10, 10, true);
+     delay(2000);     //     removed "true" from servos  ??
+     myservo2.write(160, 100, true);
+    }
+}   //   endproc
+
+
+  //                     Weathervane starts here
+void outerloopW() {  //  wind direction change
+if (millis() >= nextWindChange) {
+    WindDirection();
+ unsigned long delayTime = random(5000, 600000); // 5 sec to 10 min
+    nextWindChange = millis() + delayTime;
+    Serial.print("Next wind change ");
+    Serial.print(delayTime / 1000);
+    Serial.println(" seconds");
+  }
+ }
+void innerloopW() {      
+  if (Winner < RndWind) {
+    Winner = Winner + 1;
+  }
+  if (Winner > (RndWind - 1)) {
+    Winner = 0;
+    Wouter = Wouter + 1;
+  }
+}
+
+void WindDirection() {   //  at random time turn to random wind direction
+  Random();              //  for Wind - not delay
+  WindVane = copyOfRand;
+  WindVane = WindVane / 56;  //   0 to 180
+  Serial.print("  wind direction  ");
+  Serial.println(WindVane);
+  myservo3.write(WindVane, 100, true);
+
+}   //   endproc
+
+//    POINTS
+
+void Point1() {   
+  int point1call = analogRead(A1);
+  bool point1bool = (point1call >500);
+if (point1bool != point1 ){  
+//  Only act if the command differs from current state
+    if (point1bool ==HIGH)  {
+      myservo5.write(160);
+      point1 = HIGH;
+    }
+    else {
+      myservo5.write(10);
+      point1 = LOW;
+    }
+  }
+} 
+
+void Point2() {   //                        PinA   - input from Ard1
+  int point2call = analogRead(A2);
+ bool point2bool = (point2call >500);
+if (point2bool != point2 ){  
+//  Only act if the command differs from current state
+    if (point2bool == HIGH)  {
+      myservo6.write(160);
+      point2 = HIGH;
+    }
+    else {
+      myservo6.write(10);
+      point2 = LOW;
+    }
+  }
+}
+ 
+
+void Point3() {   //                        PinA4   - input from Ard1
+  int point3call = analogRead(A4);
+ bool point3bool = (point3call >500);
+if (point3bool != point3 ){  
+//  Only act if the command differs from current state
+    if (point3bool == HIGH)  {
+      myservo4.write(160);
+      point3 = HIGH;
+    }
+    else {
+      myservo4.write(10);
+      point3 = LOW;
+    }
+  }
+}   //   end point3
+
+void Blink() {
+  if (monBlink == LOW) {
+    monBlink = HIGH;  digitalWrite(7, HIGH);
+  }
+  else{
+    if(monBlink == HIGH){
+      monBlink = LOW;   digitalWrite(7, LOW);   
+    }
+  }
+}   //     end Blink
